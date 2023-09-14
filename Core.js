@@ -40,6 +40,8 @@ let { covid } = require('./lib/covid.js');
 const { Gempa } = require("./lib/gempa.js");
 
 const spaceemojis = ["🌌", "🌠", "🚀", "🪐", "🌟"];     // list of emojis for Space CMDs.
+const manyemojis = ["😄", "👍", "👏", "👌", "🥇", "🌟", "🎉", "🙌", "🤩", "💯", "🔥", "✨", "🚀", "💖", "🌈", "🌞", "🌠", "🌼", "💪", "😎", "💫", "💓", "🎈", "🎁", "🍾", "🎊", "🥳", "👑", "🌺", "🌻", "🌸"];
+
 const os = require('os');       // for os info
 
 const gis = require("g-i-s");
@@ -1853,49 +1855,57 @@ break;
           }
             break;
 
-	case 'chatgpt': case 'gpt':{
-              if (isBan) return reply(mess.banned);
-              if (isBanChat) return reply(mess.bangc);
-            
-              if (!q) return reply(`Please provide a text query. Example: ${prefix + command} Hello, ChatGPT!`);
-            
-              const apiUrl1 = `https://vihangayt.me/tools/chatgpt?q=${encodeURIComponent(q)}`;
-              const apiUrl2 = `https://gurugpt.cyclic.app/gpt4?prompt=${encodeURIComponent(q)}&model=llama`;
-            
-              try {
-                
-                const response1 = await fetch(apiUrl1);
-                const responseData1 = await response1.json();
-            
-                if (response1.status === 200 && responseData1 && responseData1.status === true && responseData1.data) {
-                  
-                  const message = responseData1.data;
-                  const me = m.sender;
-                  await A17.sendMessage(m.chat, { text: message, mentions: [me] }, { quoted: m });
-                } else {
-                  
-                  const response2 = await fetch(apiUrl2);
-                  const responseData2 = await response2.json();
-            
-                  if (response2.status === 200 && responseData2 && responseData2.data) {
-                    
-                    const message = responseData2.data;
-                    const me = m.sender;
-                    await A17.sendMessage(m.chat, { text: message, mentions: [me] }, { quoted: m });
-                  } else {
-                    reply("Sorry, I couldn't fetch a response from both APIs at the moment.");
-                  }
-                }
-              } catch (error) {
-                console.error(error);
-                reply("An error occurred while fetching the response from both APIs.");
-              }
-            }
-              break;
 
+            case 'chatgpt': case 'ai':
+              case 'gpt': {
+                  if (isBan) return reply(mess.banned);
+                  if (isBanChat) return reply(mess.bangc);
+              
+                  const randomEmoji = manyemojis[Math.floor(Math.random() * manyemojis.length)]; // Select a random emoji
+                  A17.sendMessage(from, { react: { text: randomEmoji, key: m.key }});
+              
+                  if (!q) return reply(`Please provide a text query. Example: ${prefix + command} Hello, ChatGPT!`);
+              
+                  try {
+                      const apiUrl1 = `https://vihangayt.me/tools/chatgpt?q=${encodeURIComponent(q)}`;
+                      const apiUrl2 = `https://gurugpt.cyclic.app/gpt4?prompt=${encodeURIComponent(q)}&model=llama`;
+              
+                      const [response1, response2] = await Promise.all([
+                          fetch(apiUrl1),
+                          fetch(apiUrl2)
+                      ]);
+              
+                      const [responseData1, responseData2] = await Promise.all([
+                          response1.json(),
+                          response2.json()
+                      ]);
+              
+                      let message = "";
+              
+                      if (response1.status === 200 && responseData1 && responseData1.status === true && responseData1.data) {
+                          message = responseData1.data;
+                      } else if (response2.status === 200 && responseData2 && responseData2.data) {
+                          message = responseData2.data;
+                      } else {
+                          return reply("Sorry, I couldn't fetch a response from both APIs at the moment.");
+                      }
+              
+                      const me = m.sender;
+                      await A17.sendMessage(m.chat, { text: message, mentions: [me] }, { quoted: m });
+              
+                  } catch (error) {
+                      console.error(error);
+                      reply("An error occurred while fetching the response from both APIs.");
+                  }
+              }
+              break;
+              
               case 'dalle': case 'imgai': {
                 if (isBan) return reply(mess.banned);
                 if (isBanChat) return reply(mess.bangc);
+                const randomEmoji = manyemojis[Math.floor(Math.random() * manyemojis.length)]; // Select a random emoji
+                A17.sendMessage(from, { react: { text: randomEmoji, key: m.key }});
+              
               
                 if (!q) return reply(`Please provide a query to generate an image. Example: ${prefix + command} Beautiful landscape`);
               
